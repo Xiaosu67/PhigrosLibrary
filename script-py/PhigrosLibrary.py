@@ -225,13 +225,12 @@ global_headers = {
 difficulty = {}
 
 def parse_b19(gameRecord):
-    print(difficulty)
     records = []
     for songId, record in gameRecord.items():
         for level in range(4):
             if record[level] != None:
-                obj = {"songId":songId,"level":level,"score":record[level][0],"acc":record[level][1],"fc":record[level][2]}
-                obj["rks"] = difficulty[songId][level] * ((obj["acc"] - 55) / 45) ** 2
+                obj = {"songId":songId,"level":level,"difficulty":difficulty[songId][level],"score":record[level][0],"acc":record[level][1],"fc":record[level][2]}
+                obj["rks"] = obj["difficulty"] * ((obj["acc"] - 55) / 45) ** 2
                 records.append(obj)
     records.sort(key=lambda x:x["rks"], reverse=True)
     b19 = [max(filter(lambda x:x["score"] == 1000000, records), key=lambda x:x["difficulty"])]
