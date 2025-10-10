@@ -15,6 +15,7 @@ enum Type {
 	_float,
 	string,
 	varshort,
+	varshort5,
 	u16array,
 };
 
@@ -33,7 +34,7 @@ struct LeafNode Summary[] = {
 	{u8, "saveVersion"},
 	{u16, "challengeModeRank"},
 	{_float, "rankingScore"},
-	{u8, "gameVersion"},
+	{varshort, "gameVersion"},
 	{string, "avatar"},
 	{u16array, "progress"}
 };
@@ -55,7 +56,7 @@ struct LeafNode GameProgress1[] = {
 	{string, "completed"},
 	{u8, "songUpdateInfo"},
 	{u16, "challengeModeRank"},
-	{varshort, "money"},
+	{varshort5, "money"},
 	{u8, "unlockFlagOfSpasmodic"},
 	{u8, "unlockFlagOfIgallta"},
 	{u8, "unlockFlagOfRrharil"},
@@ -158,13 +159,15 @@ void deserialization(cJSON* json, char** ptr, struct LeafNode* nodes, char len) 
 			*ptr += 4;
 		} else if (nodes[i].type == string) {
 			item = read_string(ptr, 0);
+		} else if (nodes[i].type == varshort) {
+			item = read_varshort(ptr);
 		} else if (nodes[i].type == u16array) {
 			item = cJSON_CreateArray();
 			for (int ii = 0; ii < 12; ii++) {
 				cJSON_AddItemToArray(item, cJSON_CreateNumber(*(short*)(*ptr)));
 				*ptr += 2;
 			}
-		} else if (nodes[i].type == varshort) {
+		} else if (nodes[i].type == varshort5) {
 			item = cJSON_CreateArray();
 			for (int ii = 0; ii < 5; ii++) {
 				short num = read_varshort(ptr);
@@ -200,10 +203,12 @@ void serialization(BIO* bio, cJSON* json, struct LeafNode* nodes, char len) {
 			BIO_write(bio, &f, 4);
 		} else if (nodes[i].type == string)
 			write_string(bio, item->valuestring, 0);
+		else if (nodes[i].type == varshort)
+			write_varshort(bio, &item->valueint);
 		else if (nodes[i].type == u16array)
 			for (char ii = 0; ii < 12; ii++)
 				BIO_write(bio, &cJSON_GetArrayItem(item, ii)->valueint, 2);
-		else if (nodes[i].type == varshort)
+		else if (nodes[i].type == varshort5)
 			for (char ii = 0; ii < 5; ii++)
 				write_varshort(bio, cJSON_GetArrayItem(item, ii)->valueint);
 	}
